@@ -1,0 +1,43 @@
+variables:
+  PROJECT_PATH: "/usr/server/filmixbackend/"
+  JAR: "filmix-0.0.1-SNAPSHOT.jar"
+  SERVER_PORT: 19190
+stages:          # List of stages for jobs, and their order of execution
+  - build
+  - test
+  - deploy
+
+build-job:       # This job runs in the build stage, which runs first.
+  tags:
+    - filmix-server
+  stage: build
+  script:
+    - source /etc/environment
+    - echo "Compiling the code..."
+    - echo "Enter entry->PROJECT_PATH"
+
+    #complie source file
+    - mvn clean package
+    #cpoy source file to server path
+    - cp -f ./target/$JAR $PROJECT_PATH
+    
+    - echo "Compile complete."
+
+
+
+deploy-job:      # This job runs in the deploy stage.
+  tags:
+    - filmix-server
+  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
+  script:
+    - echo "Deploying application..."
+    - echo "Enter entry -->$PROJECT_PATH"
+    - cd $PROJECT_PATH
+
+    #kill and rerun the application
+    - ./server-killer.sh $SERVER_PORT
+    - ./server-starter.sh $JAR
+
+    - echo "Application successfully deployed."
+  dependencies: 
+    - build-job

@@ -1,0 +1,56 @@
+services:
+  flimix-mysql:
+    container_name: flimix-mysql
+#    image: mysql
+    build:
+      context: ./backend
+      dockerfile: filmix-db.dockerfile
+    environment:
+      MYSQL_ROOT_PASSWORD: filmix2024_root
+      MYSQL_DATABASE: filmix
+      MYSQL_USER: filmix
+      MYSQL_PASSWORD: filmix2024
+
+    ports:
+      - 3306:3306
+#    volumes:
+#      - /root/mysql/init/:/docker-entrypoint-initdb.d/
+    networks:
+      - filmix-net
+
+#  filmix-minio:
+#    container_name: filmix-minio
+#    image: minio/minio
+#    environment:
+#      MINIO_ROOT_USER: admin
+#      MINIO_ROOT_PASSWORD: 202130442365
+#    command: server --console-address ":9001" /data
+#    ports:
+#      - 9000:9000
+#      - 9001:9001
+#    networks:
+#      - filmix-net
+
+  filmix-frontend:
+
+    build:
+      context: ./frontend
+      dockerfile: filmix-frontend.dockerfile
+    ports:
+      - 8080:8080
+    networks:
+      - filmix-net
+    depends_on:
+      - filmix-backend
+
+  filmix-backend:
+    build:
+      context: ./backend
+      dockerfile: filmix-backend.dockerfile
+    ports:
+      - 19190:19190
+    networks:
+      - filmix-net
+networks:
+  filmix-net:
+    driver: bridge
